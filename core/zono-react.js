@@ -1,8 +1,9 @@
 /**
- * @Date        2024/03/23 18:42:27
+ * @Date        2024/03/24 09:44:42
  * @Author      zono
- * @Description
+ * @Description V2-加入事件循环机制
  * */
+let nextWorkOFUnit = null;
 
 /**
  * @description 转换为虚拟DOM
@@ -32,31 +33,56 @@ function createTextNode(text) {
   };
 }
 
-/**
- * @description 虚拟dom转换为真实DOM
- * */
-function render(el, container) {
+function workLoop(deadline) {
+  let shouldYield = false; //是否停止
+  while (nextUnitOfWork && !shouldYield) {
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+    shouldYield = deadline.timeRemaining() < 1;
+  }
+  requestIdleCallback(workLoop);
+}
+requestIdleCallback(workLoop);
+
+//寻找下一个执行单元
+function performWorkOFUnit(fiber) {
+  // 1.创建DOM
   const dom =
     el.type === "TEXT_ELEMENT"
       ? document.createTextNode("")
       : document.createElement(el.type);
 
+  // 2.处理porps
   Object.keys(el.props).forEach((prop) => {
     if (prop !== "children") {
       dom[prop] = el.props[prop];
     }
   });
 
-  el.props.children.forEach((child) => {
-    render(child, dom);
+  // 3.转换链表
+  const children = work.props.children;
+  children.forEach((child, index) => {
+    // 为了避免修改虚拟DOM（虚拟DOM只能靠组件修改），使用fiber
+    const newWork = {
+      child: null,
+      parent: work,
+      sibling: null,
+      dom: null,
+    };
+    if (index === 0) {
+      //  第一个节点
+      work.child = newWork;
+    } else {
+      prevChild.sibling = newWork;
+    }
+    prevChild = newWork;
   });
 
-  container.append(dom);
+  // 4.返回下一个执行单元
+  if (work.child) {
+    return work.child;
+  }
+  if (work.sibling) {
+    return work.sibling;
+  }
+  return work.parent?.sibling;
 }
-
-export { createElement, render };
-const ZonoReact = {
-  createElement,
-  render,
-};
-export default ZonoReact;
