@@ -1,8 +1,4 @@
-/**
- * @Date        2024/03/24 09:44:42
- * @Author      zono
- * @Description V2-加入事件循环机制
- * */
+
 
 /**
  * @description 转换为虚拟DOM
@@ -94,7 +90,7 @@ function performUnitOfWork(fiber) {
 
   // 4.返回下一个执行单元
   // 真实DOM的渲染路径
-
+  
   if (fiber.children) return fiber.children; // 孩子（前）
   if (fiber.sibling) return fiber.sibling; // 兄弟（后）
   return fiber.parent?.sibling; // 叔叔（中的后）
