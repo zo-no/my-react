@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //用html是方便看原型
+      class Parent {
+        //会直接被添加到实例上的属性
+        //1.实例公有属性
+        constructor() {
+          this.x = 1;
+        }
+        num = 2; //与构造函数(constructor)中的this.x = 1一样,它们都是在构造函数中加入this.xxx
+        getXXX = () => {
+          //类公有方法,因为箭头函数的this指向实例对象，类似于ES5中直接this.xxx= function(){}
+          //所以这个方法也是添加到实例上的,是可以枚举，可配置，可重写的
+          console.log(this.x);
+        };
+
+        getX() {
+          //也是类公有方法,
+          //与构造函数(constructor)中,constructor.prototype.xxx = function(){}
+          //但它是给Parent.prototype添加的公共方法，不可枚举，不可配置，不可重写
+          console.log(this.x);
+          // console.log("getX");
+        }
+
+        //2.类私有属性,只能通过类名调用
+        static x0 = 3; //类私有属性,实现原理一个和下面y0相关
+        static getX0() {
+          //类似于直接在function中写function xxx(){}
+          console.log(this.x);
+        } //类私有方法
+      }
+      Parent.y0 = 100; //会变成类的静态属性,只能通过类名调用
+      Parent.prototype.y = 200; //实例公有属性，但是不会添加到实例上,
+
+      let p = new Parent();
+      //模块字符串输出,不能使用单引号和双引号，只能使用反引号
+      //   console.log(`父原型`, Parent.prototype);
+      //   console.log(`实例原型`, p.__proto__); //子原型
+      console.log(`实例`, p);
+      //   console.log(
+      //     `父原型和实例原型比较Parent.prototype === p.__proto__`,
+      //     Parent.prototype === p.__proto__
+      //   ); //true
+      //   console.log(Parent.prototype.constructor === Parent);
+      console.log(Parent.prototype.constructor === p.__proto__.constructor);
+      q = new p.__proto__.constructor();
+      o = new Parent();
+      console.log(o === p); //false,因为q是新的实例,实例之间是不相等的
+
+      // ---------------------------------------------------------------
+      // 基于extended实现继承：见代码
+    </script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <button id="btn">click</button>
+</body>
+<script>
+  //模拟一个最简单的事件池
+  let eventPool = {
+    //存储事件的容器
+    list: [],
+    //订阅事件
+    on(key, fn) {
+      if (!this.list[key]) {
+        this.list[key] = []
+      }
+      this.list[key].push(fn)
+    },
+    //发布事件
+    emit() {
+      //第一个参数是事件名
+      let key = [].shift.call(arguments)
+      let fns = this.list[key]
+      if (!fns || fns.length === 0) {
+        return false
+      }
+      fns.forEach(fn => {
+        fn.apply(this, arguments)
+      })
+    },
+    //取消订阅
+    remove(key, fn) {
+      let fns = this.list[key]
+      if (!fns) {
+        return false
+      }
+      if (!fn) {
+        fns && (fns.length = 0)
+      } else {
+        fns.forEach((cb, i) => {
+          if (cb === fn) {
+            fns.splice(i, 1)
+          }
+        })
+      }
+    }
+  }
+  //订阅事件
+  eventPool.on('click', function (a, b) {
+    console.log(a + b)
+  })
+  eventPool.on('click', function (a, b) {
+    console.log(a - b)
+  })
+  //发布事件
+  eventPool.emit('click', 1, 2)
+  //取消订阅
+  eventPool.remove('click')
+  eventPool.emit('click', 1, 2)
+  
+</script>
+</html>
